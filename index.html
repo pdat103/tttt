@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi Người Tớ Thương 💖</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+        }
+        .font-romantic {
+            font-family: 'Dancing Script', cursive;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ffe4e6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fda4af;
+            border-radius: 10px;
+        }
+        /* Heart animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        .floating-heart {
+            position: absolute;
+            pointer-events: none;
+            animation: float 6s linear infinite;
+        }
+        /* Envelope animation */
+        .envelope-wrapper {
+            perspective: 1000px;
+        }
+        .envelope {
+            position: relative;
+            transition: transform 0.8s ease;
+            transform-style: preserve-3d;
+        }
+        .envelope.open {
+            transform: rotateX(-10deg);
+        }
+        /* Pulse soft */
+        @keyframes customPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .pulse-soft {
+            animation: customPulse 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-rose-50 via-pink-100 to-teal-50 min-h-screen flex flex-col items-center justify-center overflow-x-hidden relative">
+
+    <!-- Floating Background Hearts -->
+    <div id="heart-container" class="absolute inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+    <!-- AUDIO PLAYER -->
+    <div class="fixed top-4 right-4 z-50 bg-white/80 backdrop-blur-md p-2 rounded-full shadow-lg flex items-center gap-2 border border-pink-200">
+        <button id="music-btn" class="w-10 h-10 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center transition-all focus:outline-none pulse-soft">
+            <i data-lucide="music" class="w-5 h-5"></i>
+        </button>
+        <span id="music-status" class="text-xs font-semibold text-rose-600 pr-2 hidden md:inline">Nhạc lãng mạn</span>
+        <!-- Nhạc nền nhẹ nhàng lãng mạn -->
+        <audio id="bg-music" loop preload="auto">
+            <source src="c:\Users\HP\Downloads\Âm Thầm Bên Em - Sơn Tùng M-TP  Piano Cover - Người Nghiện Chơi Đàn.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <!-- ==================== 1. MÀN HÌNH MỞ ĐẦU (ENVELOPE SCREEN) ==================== -->
+    <section id="screen-intro" class="z-10 flex flex-col items-center justify-center p-4 text-center transition-all duration-1000">
+        <div class="max-w-md bg-white/40 backdrop-blur-md p-8 rounded-3xl border border-white/60 shadow-2xl">
+            <div class="w-24 h-24 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner pulse-soft">
+                <i data-lucide="heart" class="w-12 h-12 fill-current"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3 font-romantic">Gửi người thương...</h1>
+            <p class="text-gray-600 mb-8 leading-relaxed">Có một bức thư chứa đựng tất cả tình cảm thầm kín bấy lâu nay muốn gửi riêng cho cậu. Hãy mở nó ra nhé!</p>
+            
+            <!-- Envelope Container -->
+            <div class="envelope-wrapper cursor-pointer mx-auto w-64 h-44 mb-6" onclick="openLetter()">
+                <div class="envelope bg-rose-200 rounded-lg shadow-xl w-full h-full flex flex-col items-center justify-center border-b-4 border-rose-300 hover:shadow-2xl transition-all relative">
+                    <!-- Flap -->
+                    <div class="absolute top-0 left-0 right-0 h-0 border-l-[128px] border-l-transparent border-r-[128px] border-r-transparent border-t-[88px] border-t-rose-400 origin-top transition-transform duration-500 z-20" id="flap"></div>
+                    
+                    <!-- Paper sticking out -->
+                    <div class="w-56 h-36 bg-white rounded-md shadow-md absolute bottom-2 z-10 transition-transform duration-500 flex flex-col justify-center items-center px-4 py-2" id="paper">
+                        <p class="text-rose-500 font-bold text-sm">Chỉ dành cho cậu ❤️</p>
+                        <p class="text-gray-400 text-xxs mt-1">Bấm để mở thư...</p>
+                    </div>
+                    
+                    <!-- Envelope front cover -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-rose-300 to-rose-200 opacity-90 rounded-lg z-30 flex items-end justify-center pb-4">
+                        <div class="bg-rose-500 text-white rounded-full p-2 shadow-md">
+                            <i data-lucide="mail-open" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 2. MÀN HÌNH CHÍNH (THE LOVE HUB) ==================== -->
+    <section id="screen-main" class="hidden z-10 w-full max-w-4xl px-4 py-8 flex flex-col items-center transition-all duration-1000 opacity-0 scale-95">
+        
+        <!-- Welcome Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-rose-600 font-romantic mb-2">Chào mừng cậu đến với thế giới ngọt ngào này! ✨</h1>
+            <p class="text-gray-600">Nơi lưu giữ tình yêu, sự chân thành và những điều thầm kín nhất.</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex gap-2 justify-center bg-white/60 backdrop-blur-md p-1.5 rounded-2xl border border-pink-200 shadow-md mb-8 max-w-sm w-full">
+            <button onclick="switchTab('tab-letter')" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all bg-rose-500 text-white shadow" id="btn-tab-letter">
+                <i data-lucide="mail" class="w-4 h-4"></i>
+                Thư Tình
+            </button>
+            <button onclick="switchTab('tab-reasons')" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all text-gray-600 hover:text-rose-600" id="btn-tab-reasons">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                Lý Do
+            </button>
+        </div>
+
+        <!-- TAB CONTENT: LOVE LETTER -->
+        <div id="tab-letter" class="tab-content w-full bg-white/80 backdrop-blur-md rounded-3xl p-6 md:p-10 border border-white/60 shadow-xl relative overflow-hidden transition-all duration-300">
+            <div class="absolute -top-10 -left-10 w-40 h-40 bg-pink-200/30 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-rose-200/30 rounded-full blur-2xl"></div>
+            
+            <div class="relative z-10">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 font-romantic border-b border-rose-200 pb-3 flex items-center gap-3">
+                    <i data-lucide="heart" class="text-rose-500 fill-rose-500"></i> Thư Gửi Riêng Cậu
+                </h2>
+                <div class="text-gray-700 leading-relaxed text-lg space-y-4 font-normal">
+                    <p>Chào cậu, người đã nhẹ nhàng bước vào cuộc sống của tớ và khiến mọi thứ trở nên thật đặc biệt.</p>
+                    <p>Có những ngày tớ nhận ra, hạnh phúc đôi khi không phải là điều gì đó quá xa xôi, mà đơn giản chỉ là được nhìn thấy nụ cười của cậu, được cùng cậu nhắn tin mỗi tối, hay chia sẻ với nhau những câu chuyện vụn vặt ngày thường.</p>
+                    <p>Tớ thích cách cậu cười, thích cách cậu luôn dịu dàng lắng nghe. Mỗi một khoảnh khắc bên cậu đều là những thước phim đẹp đẽ mà tớ muốn lưu giữ mãi mãi trong tim.</p>
+                    <p class="font-semibold text-rose-600 italic">"Gặp được cậu là điều tuyệt vời nhất trong những năm tháng thanh xuân này của tớ."</p>
+                    <p>Hôm nay, tớ lấy hết can đảm tạo ra trang web nhỏ này chỉ để hỏi cậu một câu hỏi vô cùng quan trọng... Cậu hãy sang tab <strong>Lý Do</strong> để xem tiếp nhé!</p>
+                </div>
+                <div class="mt-8 flex justify-end">
+                    <button onclick="switchTab('tab-reasons')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-6 rounded-2xl flex items-center gap-2 transition-all shadow-md hover:shadow-lg">
+                        Đọc lý do tớ thương cậu <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: REASONS -->
+        <div id="tab-reasons" class="tab-content hidden w-full bg-white/80 backdrop-blur-md rounded-3xl p-6 md:p-10 border border-white/60 shadow-xl relative transition-all duration-300">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 font-romantic border-b border-rose-200 pb-3 flex items-center gap-3">
+                <i data-lucide="sparkles" class="text-amber-500 fill-amber-500"></i> Vì Sao Tớ Thương Cậu Nhỉ?
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-gradient-to-br from-pink-50 to-white p-6 rounded-2xl border border-pink-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                        <i data-lucide="smile" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Nụ Cười Tỏa Nắng</h3>
+                    <p class="text-sm text-gray-600">Nụ cười của cậu có thể xua tan hết mọi mệt mỏi và âu lo trong ngày của tớ chỉ trong một giây.</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-gradient-to-br from-pink-50 to-white p-6 rounded-2xl border border-pink-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                        <i data-lucide="coffee" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Sự Ấm Áp & Dịu Dàng</h3>
+                    <p class="text-sm text-gray-600">Cách cậu quan tâm, trò chuyện luôn mang lại cho tớ cảm giác yên bình và vô cùng được che chở.</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-gradient-to-br from-pink-50 to-white p-6 rounded-2xl border border-pink-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                        <i data-lucide="star" class="w-8 h-8 fill-teal-100"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Là Chính Cậu</h3>
+                    <p class="text-sm text-gray-600">Cậu là phiên bản duy nhất, đáng yêu và hoàn hảo nhất. Tớ thương tất cả những gì thuộc về cậu.</p>
+                </div>
+            </div>
+            
+            <div class="mt-12 flex flex-col items-center gap-6 border-t border-rose-100 pt-8">
+                <p class="text-gray-600 text-center max-w-md">Tớ đã chia sẻ hết những lời tận đáy lòng rồi. Bây giờ, tớ có điều này cực kỳ quan trọng muốn hỏi cậu...</p>
+                
+                <div class="flex flex-wrap gap-4 justify-center w-full">
+                    <button onclick="switchTab('tab-letter')" class="text-rose-600 hover:text-rose-700 font-bold flex items-center gap-2 px-4 py-2">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i> Đọc lại thư
+                    </button>
+                    <button onclick="goToProposal()" class="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-extrabold text-lg py-4 px-10 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:scale-105 pulse-soft flex items-center gap-2">
+                        Cậu ơi, tớ hỏi cái này nha... ❤️ <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ==================== 3. MÀN HÌNH TỎ TÌNH (THE PROPOSAL SCREEN) ==================== -->
+    <section id="screen-proposal" class="hidden z-10 w-full max-w-xl px-4 py-8 flex flex-col items-center justify-center text-center transition-all duration-1000 opacity-0 scale-95">
+        <div class="bg-white/80 backdrop-blur-md rounded-3xl p-8 md:p-12 border border-white/60 shadow-2xl w-full relative overflow-hidden">
+            <!-- Decorative Hearts -->
+            <div class="absolute top-4 left-4 text-rose-300 opacity-50"><i data-lucide="heart" class="w-8 h-8 fill-current"></i></div>
+            <div class="absolute bottom-4 right-4 text-rose-300 opacity-50"><i data-lucide="heart" class="w-8 h-8 fill-current"></i></div>
+
+            <div class="w-28 h-28 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner pulse-soft">
+                <span class="text-6xl" id="proposal-emoji">🥺</span>
+            </div>
+            
+            <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-4" id="proposal-title">
+                Cậu đồng ý làm người yêu tớ nha? ❤️
+            </h2>
+            <p class="text-gray-600 mb-8 max-w-sm mx-auto" id="proposal-desc">
+                Tớ đã chuẩn bị cả tấm lòng này để chờ đợi câu trả lời từ cậu. Đừng từ chối tớ nhaaa...
+            </p>
+
+            <!-- Buttons Area -->
+            <div class="flex flex-col sm:flex-row gap-4 items-center justify-center min-h-[120px] relative" id="btn-container">
+                <!-- YES BUTTON -->
+                <button id="btn-yes" onclick="celebrateSuccess()" class="bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xl py-4 px-10 rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 z-10 inline-flex items-center gap-2 min-w-[140px] justify-center">
+                    Đồng Ý! 🥰
+                </button>
+                <!-- NO BUTTON -->
+                <button id="btn-no" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold text-lg py-3 px-8 rounded-2xl transition-all duration-200 min-w-[120px] justify-center" onmouseover="handleNoHover()" onclick="handleNoHover()">
+                    Hônggg 😜
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 4. MÀN HÌNH THÀNH CÔNG (SUCCESS SCREEN) ==================== -->
+    <section id="screen-success" class="hidden z-10 w-full max-w-xl px-4 py-8 flex flex-col items-center justify-center text-center transition-all duration-1000 opacity-0 scale-95">
+        <div class="bg-white/80 backdrop-blur-md rounded-3xl p-8 md:p-12 border border-rose-300 shadow-2xl w-full relative">
+            <div class="w-32 h-32 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <span class="text-7xl animate-bounce">💖</span>
+            </div>
+            
+            <h2 class="text-3xl md:text-4xl font-extrabold text-rose-600 mb-4 font-romantic">
+                Yésss! Hạnh Phúc Quá Đi Thôiii! 🎉
+            </h2>
+            <p class="text-gray-700 text-lg leading-relaxed mb-6">
+                Cảm ơn cậu vì đã đồng ý! Tớ hứa sẽ luôn trân trọng, nâng niu và mang lại thật nhiều tiếng cười cho cậu mỗi ngày.
+            </p>
+            
+            <div class="bg-rose-50/80 p-5 rounded-2xl border border-rose-100 mb-8">
+                <p class="text-rose-500 font-semibold italic">"Kể từ hôm nay, chúng mình chính thức là một đôi rồi nhé! ❤️"</p>
+            </div>
+
+            <p class="text-sm text-gray-500 italic">Hãy chụp màn hình này lại và gửi ngay cho tớ để nhận "món quà ngọt ngào" đầu tiên nhé! 🥰</p>
+        </div>
+    </section>
+
+    <!-- Script điều khiển -->
+    <script>
+        // Khởi tạo các biểu tượng Lucide
+        lucide.createIcons();
+
+        // Biến trạng thái âm thanh
+        const bgMusic = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-btn');
+        let isMusicPlaying = false;
+
+        // Trình phát nhạc
+        musicBtn.addEventListener('click', () => {
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                musicBtn.classList.remove('bg-rose-600', 'pulse-soft');
+                musicBtn.classList.add('bg-rose-500');
+                musicBtn.innerHTML = '<i data-lucide="music-2" class="w-5 h-5"></i>';
+            } else {
+                bgMusic.play().then(() => {
+                    musicBtn.classList.add('bg-rose-600', 'pulse-soft');
+                    musicBtn.innerHTML = '<i data-lucide="music" class="w-5 h-5"></i>';
+                }).catch(e => console.log("Không thể tự động phát nhạc:", e));
+            }
+            isMusicPlaying = !isMusicPlaying;
+            lucide.createIcons();
+        });
+
+        // Tạo hiệu ứng tim bay bổng nền
+        function createHeart() {
+            const container = document.getElementById('heart-container');
+            if (!container) return;
+            const heart = document.createElement('div');
+            heart.classList.add('floating-heart', 'text-rose-300', 'opacity-30');
+            
+            // Random kích thước, vị trí, thời gian chạy
+            const size = Math.random() * 20 + 10;
+            heart.style.width = `${size}px`;
+            heart.style.height = `${size}px`;
+            heart.style.left = `${Math.random() * 100}vw`;
+            heart.style.bottom = `-50px`;
+            
+            // Random tốc độ bay
+            const duration = Math.random() * 4 + 4;
+            heart.style.animationDuration = `${duration}s`;
+            
+            heart.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+            
+            container.appendChild(heart);
+            
+            // Xóa tim sau khi kết thúc animation
+            setTimeout(() => {
+                heart.remove();
+            }, duration * 1000);
+        }
+
+        // Tạo tim liên tục
+        setInterval(createHeart, 500);
+
+        // Mở thư tình
+        function openLetter() {
+            const flap = document.getElementById('flap');
+            const paper = document.getElementById('paper');
+            
+            // Phát nhạc tự động nếu được phép
+            if (!isMusicPlaying) {
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    musicBtn.classList.add('bg-rose-600', 'pulse-soft');
+                }).catch(() => {});
+            }
+
+            // Chạy hiệu ứng mở thư
+            flap.style.transform = 'rotateX(180deg)';
+            flap.style.zIndex = '0';
+            paper.style.transform = 'translateY(-50px)';
+
+            // Chuyển sang màn hình chính sau 1 giây
+            setTimeout(() => {
+                const screenIntro = document.getElementById('screen-intro');
+                const screenMain = document.getElementById('screen-main');
+                
+                screenIntro.classList.add('opacity-0', 'scale-95');
+                
+                setTimeout(() => {
+                    screenIntro.classList.add('hidden');
+                    screenMain.classList.remove('hidden');
+                    setTimeout(() => {
+                        screenMain.classList.remove('opacity-0', 'scale-95');
+                        screenMain.classList.add('opacity-100', 'scale-100');
+                    }, 50);
+                }, 500);
+            }, 1200);
+        }
+
+        // Chuyển Tab
+        function switchTab(tabId) {
+            // Ẩn tất cả tab
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            // Show tab được chọn
+            document.getElementById(tabId).classList.remove('hidden');
+
+            // Cập nhật phong cách nút tab
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-rose-500', 'text-white', 'shadow');
+                btn.classList.add('text-gray-600', 'hover:text-rose-600');
+            });
+
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-600', 'hover:text-rose-600');
+                activeBtn.classList.add('bg-rose-500', 'text-white', 'shadow');
+            }
+        }
+
+        // Chuyển đến màn hình Tỏ Tình
+        function goToProposal() {
+            const screenMain = document.getElementById('screen-main');
+            const screenProposal = document.getElementById('screen-proposal');
+            
+            screenMain.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                screenMain.classList.add('hidden');
+                screenProposal.classList.remove('hidden');
+                setTimeout(() => {
+                    screenProposal.classList.remove('opacity-0', 'scale-95');
+                    screenProposal.classList.add('opacity-100', 'scale-100');
+                }, 50);
+            }, 500);
+        }
+
+        // Logic của nút "Không" tinh nghịch
+        let noCount = 0;
+        const noPhrases = [
+            "Hônggg 😜",
+            "Cậu chắc chưa đó? 🥺",
+            "Ơ kìa, suy nghĩ lại đi mà...",
+            "Tớ thương cậu lắm luôn á! ❤️",
+            "Mua trà sữa cho mỗi ngày nha? 🧋",
+            "Thực sự không đồng ý sao? 😭",
+            "Nút này sắp biến mất rồi bạn ơi...",
+            "Đừng từ chối mà, năn nỉ đó!"
+        ];
+
+        function handleNoHover() {
+            const btnNo = document.getElementById('btn-no');
+            const btnYes = document.getElementById('btn-yes');
+            const emoji = document.getElementById('proposal-emoji');
+            
+            noCount++;
+
+            // Thay đổi emoji lãng mạn dỗi hờn
+            if (noCount === 1) emoji.innerText = "😢";
+            else if (noCount === 3) emoji.innerText = "😭";
+            else if (noCount === 5) emoji.innerText = "🥺";
+            else if (noCount >= 7) emoji.innerText = "🧸";
+
+            // Thay đổi text của nút No
+            btnNo.innerText = noPhrases[noCount % noPhrases.length];
+
+            // Di chuyển nút No đến vị trí ngẫu nhiên trong vùng container
+            const container = document.getElementById('btn-container');
+            const containerRect = container.getBoundingClientRect();
+            const btnRect = btnNo.getBoundingClientRect();
+
+            // Tính toán khoảng cách tối đa có thể dịch chuyển để không vượt ngoài container
+            const maxX = containerRect.width - btnRect.width;
+            const maxY = 150; // Giới hạn chiều cao nhảy
+
+            const randomX = Math.random() * maxX - (maxX / 2);
+            const randomY = Math.random() * maxY - (maxY / 2);
+
+            btnNo.style.transform = `translate(${randomX}px, ${randomY}px)`;
+
+            // Làm nút "Có" to lên dần để dễ bấm hơn
+            const currentScale = 1 + (noCount * 0.15);
+            btnYes.style.transform = `scale(${currentScale})`;
+            
+            // Giới hạn nút No nhỏ lại
+            const currentNoScale = Math.max(0.6, 1 - (noCount * 0.05));
+            btnNo.style.transform += ` scale(${currentNoScale})`;
+        }
+
+        // Khi đồng ý thành công!
+        function celebrateSuccess() {
+            const screenProposal = document.getElementById('screen-proposal');
+            const screenSuccess = document.getElementById('screen-success');
+
+            screenProposal.classList.add('opacity-0', 'scale-95');
+
+            setTimeout(() => {
+                screenProposal.classList.add('hidden');
+                screenSuccess.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    screenSuccess.classList.remove('opacity-0', 'scale-95');
+                    screenSuccess.classList.add('opacity-100', 'scale-100');
+                    
+                    // Kích hoạt pháo hoa liên tục cực kỳ đẹp
+                    triggerConfettiFlow();
+                }, 50);
+            }, 500);
+        }
+
+        // Hàm bắn pháo hoa
+        function triggerConfettiFlow() {
+            const duration = 15 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+              const timeLeft = animationEnd - Date.now();
+
+              if (timeLeft <= 0) {
+                return clearInterval(interval);
+              }
+
+              const particleCount = 50 * (timeLeft / duration);
+              // Bắn pháo hoa từ hai bên trái phải
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+    </script>
+</body>
+</html>
